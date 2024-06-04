@@ -1,2 +1,1 @@
-# codenames-map
-Codenames Pictures: Map
+# Codenames Pictures: Map
