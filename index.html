@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codenames: Pictures Map</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #passcode-form {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        #passcode-form label, #passcode-form input, #passcode-form button {
+            display: block;
+            margin: 5px auto;
+        }
+        #passcode-form input {
+            padding: 10px;
+            font-size: 1em;
+            width: calc(100% - 40px);
+            max-width: 300px;
+            box-sizing: border-box;
+        }
+        #passcode-form button {
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #passcode-form button:hover {
+            background-color: #0056b3;
+        }
+        #map {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 5px;
+            width: 90vw;
+            height: 72vw; /* Maintain 5:4 aspect ratio */
+            max-width: 600px;
+            max-height: 480px;
+            box-sizing: border-box;
+        }
+        .card {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            color: white;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            aspect-ratio: 1 / 1;
+        }
+        .neutral { background-color: gray; }
+        .black { background-color: black; }
+        .blue { background-color: blue; }
+        .red { background-color: red; }
+
+        @media (max-width: 600px) {
+            #passcode-form input {
+                width: calc(100% - 40px);
+            }
+            #passcode-form button {
+                width: calc(100% - 40px);
+            }
+            #map {
+                width: 90vw;
+                height: 72vw; /* Maintain 5:4 aspect ratio */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="passcode-form">
+        <label for="passcode">Enter passcode:</label>
+        <input type="text" id="passcode" required>
+        <button onclick="generateMap()">Generate Map</button>
+    </div>
+    <div id="map"></div>
+
+    <script>
+        function generateMap() {
+            const passcode = document.getElementById('passcode').value;
+            if (!passcode) return alert('Please enter a passcode.');
+
+            const seed = generateSeed(passcode);
+            const map = document.getElementById('map');
+            map.innerHTML = '';
+            const colors = generateColors(seed);
+            
+            colors.forEach(color => {
+                const card = document.createElement('div');
+                card.classList.add('card', color);
+                map.appendChild(card);
+            });
+        }
+
+        function generateSeed(passcode) {
+            let seed = 0;
+            for (let i = 0; i < passcode.length; i++) {
+                seed = (seed << 5) - seed + passcode.charCodeAt(i);
+                seed = seed & seed; // Convert to 32bit integer
+            }
+            return Math.abs(seed);
+        }
+
+        function generateColors(seed) {
+            const totalCards = 20;
+            const neutralCount = 4;
+            const blackCount = 1;
+            const blueCount = seed % 2 === 0 ? 8 : 7;
+            const redCount = totalCards - neutralCount - blackCount - blueCount;
+
+            let colors = Array(blueCount).fill('blue')
+                .concat(Array(redCount).fill('red'))
+                .concat(Array(neutralCount).fill('neutral'))
+                .concat(Array(blackCount).fill('black'));
+
+            // Shuffle colors array based on seed
+            for (let i = colors.length - 1; i > 0; i--) {
+                const j = Math.floor(random(seed) * (i + 1));
+                [colors[i], colors[j]] = [colors[j], colors[i]];
+                seed++;
+            }
+
+            return colors;
+        }
+
+        function random(seed) {
+            const x = Math.sin(seed++) * 10000;
+            return x - Math.floor(x);
+        }
+    </script>
+</body>
+</html>
